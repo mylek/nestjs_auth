@@ -21,6 +21,10 @@ export class AuthController {
         @Body('password') password : string
     ) {
         const hashedPassword = await bcrypt.hash(password, 12);
+        const user = await this.appService.findOne({ email });
+        if (!user) {
+            throw new BadRequestException('Email already exists');
+        }
 
         return this.appService.create({
             username,
@@ -37,11 +41,11 @@ export class AuthController {
     ) {
         const user = await this.appService.findOne({ email });
         if (!user) {
-        throw new BadRequestException('Invalid credentials');
+            throw new BadRequestException('Invalid credentials');
         }
 
         if (!await bcrypt.compare(password, user.password)) {
-        throw new BadRequestException('Invalid credentials');
+            throw new BadRequestException('Invalid credentials');
         }
 
         const jwt = await this.jwtService.signAsync({ id: user.id});
@@ -54,15 +58,12 @@ export class AuthController {
     async user(@Req() request: Request) {
         try {
             const cookie = request.cookies['jwt'];
-
             const data = await this.jwtService.verifyAsync(cookie);
             if (!data) {
                 throw new UnauthorizedException('Invalid token');
             }
 
-            const user = await this.appService.findOne({ id: data.id });
-
-            return user;
+            return await this.appService.findOne({ id: data.id });
         } catch (error) {
             throw new UnauthorizedException('Invalid token');
         }
