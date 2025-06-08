@@ -25,4 +25,16 @@ export class AuthService {
         }
         return user;
     }
+
+    async remove(id: number): Promise<User> {
+        const user = await this.userRepository.findOneBy({id});
+        if (!user) {
+            throw new NotFoundException('User not exist');
+        }
+        return await this.userRepository.remove(user);
+    }
+
+    async findAll(): Promise<User[]> {
+        return await this.userRepository.find();
+    }
 }

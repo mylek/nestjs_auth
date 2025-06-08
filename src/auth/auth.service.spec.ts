@@ -3,7 +3,8 @@ import { AuthService } from './auth.service';
 import { getRepositoryToken } from '@nestjs/typeorm'
 import { User } from './user.entity';
 import { Repository } from 'typeorm';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { Role } from './enums/role.enum';
 
 describe('AuthService', () => {
     let service: AuthService;
@@ -29,9 +30,10 @@ describe('AuthService', () => {
         const email = 'testuser@o2.pl';
         const username = 'testuser';
         const password = 'testpassword';
-        userData = { id: id, username: username, password: password, email: email } as User;
+        userData = { id: id, username: username, password: password, email: email, role:  Role.USER} as User;
         jest.spyOn(userRepository, 'findOneBy').mockResolvedValueOnce(userData);
         jest.spyOn(userRepository, 'save').mockResolvedValueOnce(userData);
+        jest.spyOn(userRepository, 'remove').mockResolvedValueOnce(userData);
     });
 
     it('should be defined', () => {
@@ -53,5 +55,18 @@ describe('AuthService', () => {
     it ('findOne', async () => {
         const user = await service.findOne({username: userData.username});
         expect(user.username).toBe(userData.username);
+    });
+
+    it ('delete user', async () => {
+        expect(await service.remove(userData.id)).toEqual(userData);
+    });
+
+    it ('delete user not exist', async () => {
+        jest.spyOn(userRepository, 'findOneBy').mockClear().mockResolvedValueOnce(null);
+        try {
+            await service.remove(userData.id);
+        } catch (error) {
+            expect(error).toBeInstanceOf(BadRequestException);
+        }
     });
 });

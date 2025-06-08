@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import {Response, Request} from 'express';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common/exceptions';
 import { NotFoundException } from '@nestjs/common';
+import { Role } from './enums/role.enum';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -12,14 +13,19 @@ describe('AuthController', () => {
   let fakeJwtService: Partial<JwtService>;
   let responseMock: Response;
   let requestMock: Request;
+  let userData;
 
   beforeEach(async () => {
+    userData = { id: 1, username: 'testuser', email: 'testuser@example.com', password: 'hashedpassword', role: Role.USER };
     fakeAppService = {
       findOne: () => {
-        return Promise.resolve({ id: 1, username: 'testuser', email: 'testuser@example.com', password: 'hashedpassword' });
+        return Promise.resolve(userData);
       },
       create: () => {
-        return Promise.resolve({id: 1, username: 'testuser', email: 'testuser@example.com', password: 'hashedpassword' });
+        return Promise.resolve(userData);
+      },
+      remove: () => {
+        return Promise.resolve(userData);
       }
     };
 
@@ -68,20 +74,13 @@ describe('AuthController', () => {
   });
 
   it ('register user', async () => {
-    fakeAppService.findOne = () => {
-      return Promise.resolve({ id: 1, username: 'testuser', email: 'testuser@example.com', password: 'hashedpassword' });
-    };
-    const result = await controller.register('testuser', 'testuser@example.com', 'password123');
-    expect(result).toEqual({ id: 1, username: 'testuser', email: 'testuser@example.com', password: 'hashedpassword' });
+    const result = await controller.register(userData.username, userData.email, userData.password);
+    expect(result).toEqual(userData);
   });
 
   it ('register user with existing email', async () => {
-    fakeAppService.findOne = () => {
-      return Promise.resolve({ id: 1, username: 'testuser', email: 'testuser@example.com', password: 'hashedpassword' });
-    };
-
     try {
-      await controller.register('testuser', 'testuser@example.com', 'password123');
+      await controller.register(userData.username, userData.email, userData.password);
     } catch (error) {
       expect(error).toBeInstanceOf(BadRequestException);
       expect(error.message).toBe('Email already exists');
@@ -90,7 +89,7 @@ describe('AuthController', () => {
 
   it ('user with valid token', async () => {
     const result = await controller.user(requestMock);
-    expect(result).toEqual({ id: 1, username: 'testuser', email: 'testuser@example.com', password: 'hashedpassword' });
+    expect(result).toEqual(userData);
   });
 
   it ('user invalid token', async () => {
@@ -100,6 +99,24 @@ describe('AuthController', () => {
     } catch (error) {
       expect(error).toBeInstanceOf(UnauthorizedException);
       expect(error.message).toBe('Invalid token');
+    }
+  });
+
+  it ('remove user', async () => {
+    const result = await controller.remove(userData.id);
+    expect(result).toEqual(userData);
+  });
+
+  it ('remove user not exist', async () => {
+    fakeAppService.remove = jest.fn().mockImplementation(() => {
+      throw new NotFoundException('User not exist');
+    });
+
+    try {
+      await controller.remove(userData.id);
+    } catch (error) {
+      expect(error).toBeInstanceOf(NotFoundException);
+      expect(error.message).toBe('User not exist');
     }
   });
 });

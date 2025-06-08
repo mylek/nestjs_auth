@@ -1,11 +1,15 @@
-import { Controller, Post, Body, Get, Res, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, Res, Req, Param, Delete, SetMetadata, UseGuards } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common/exceptions';
 import { JwtService } from '@nestjs/jwt';
 import {Response, Request} from 'express';
+import { Role } from './enums/role.enum';
+import { Roles } from './decorators/roles.decorator';
+import { RolesGuard } from './guards/roles/roles.guard';
+import { AuthGuard } from './guards/auth.guard';
 
-
+@UseGuards(AuthGuard)
 @Controller('api/auth')
 export class AuthController {
     constructor(
@@ -21,10 +25,6 @@ export class AuthController {
         @Body('password') password : string
     ) {
         const hashedPassword = await bcrypt.hash(password, 12);
-        const user = await this.appService.findOne({ email });
-        if (!user) {
-            throw new BadRequestException('Email already exists');
-        }
 
         return this.appService.create({
             username,
@@ -48,11 +48,12 @@ export class AuthController {
             throw new BadRequestException('Invalid credentials');
         }
 
-        const jwt = await this.jwtService.signAsync({ id: user.id});
+        const jwt = await this.jwtService.signAsync({ id: user.id, role: user.role});
         response.cookie('jwt', jwt, {httpOnly: true});
 
         return {message: 'Login successful'};
     }
+
 
     @Get('user')
     async user(@Req() request: Request) {
@@ -73,5 +74,19 @@ export class AuthController {
     async logout(@Res({passthrough: true}) response: Response) {
         response.clearCookie('jwt');
         return {message: 'Logout successful'};
+    }
+
+    @UseGuards(RolesGuard)
+    @Roles(Role.ADMIN)
+    @Delete(':id')
+    async remove(@Param('id') id: number) {
+        return await this.appService.remove(id);
+    }
+
+    @UseGuards(RolesGuard)
+    @Get('users')
+    @Roles(Role.ADMIN)
+    async getUsers() {
+        return await this.appService.findAll();
     }
 }
