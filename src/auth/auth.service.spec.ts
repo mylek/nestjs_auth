@@ -5,11 +5,14 @@ import { User } from './user.entity';
 import { Repository } from 'typeorm';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Role } from './enums/role.enum';
+import { Info } from '../user/entity/info.entity';
 
 describe('AuthService', () => {
     let service: AuthService;
     let userRepository: Repository<User>;
+    let infoRepository: Repository<Info>;
     let userRepositoryToken: string | Function = getRepositoryToken(User);
+    let infoRepositoryToken: string | Function = getRepositoryToken(Info);
     let userData;
 
     beforeEach(async () => {
@@ -18,6 +21,10 @@ describe('AuthService', () => {
                 AuthService,
                 {
                     provide: userRepositoryToken,
+                    useClass: Repository,
+                },
+                {
+                    provide: infoRepositoryToken,
                     useClass: Repository,
                 },
             ]

@@ -2,11 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
+import { Info } from '../user/entity/info.entity';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 
 export class AuthService {
     constructor(
         @InjectRepository(User) private readonly userRepository: Repository<User>,
+        @InjectRepository(Info) private readonly infoRepository: Repository<Info>,
     ) {
     }
 

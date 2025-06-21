@@ -9,7 +9,7 @@ import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles/roles.guard';
 import { AuthGuard } from './guards/auth.guard';
 
-@UseGuards(AuthGuard)
+
 @Controller('api/auth')
 export class AuthController {
     constructor(
@@ -51,10 +51,11 @@ export class AuthController {
         const jwt = await this.jwtService.signAsync({ id: user.id, role: user.role});
         response.cookie('jwt', jwt, {httpOnly: true});
 
-        return {message: 'Login successful'};
+        return {token: jwt, role: user.role};
     }
 
 
+    @UseGuards(AuthGuard)
     @Get('user')
     async user(@Req() request: Request) {
         try {
@@ -70,12 +71,14 @@ export class AuthController {
         }
     }
 
+    @UseGuards(AuthGuard)
     @Post('logout')
     async logout(@Res({passthrough: true}) response: Response) {
         response.clearCookie('jwt');
         return {message: 'Logout successful'};
     }
 
+    @UseGuards(AuthGuard)
     @UseGuards(RolesGuard)
     @Roles(Role.ADMIN)
     @Delete(':id')
@@ -83,7 +86,8 @@ export class AuthController {
         return await this.appService.remove(id);
     }
 
-    @UseGuards(RolesGuard)
+    @UseGuards(AuthGuard)
+    //@UseGuards(RolesGuard)
     @Get('users')
     @Roles(Role.ADMIN)
     async getUsers() {
