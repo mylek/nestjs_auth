@@ -16,19 +16,28 @@ export class ForgotPasswordService {
     ) {
     }
 
-    async sendMail(email: string): Promise<void> {
+    async sendMail(email: string): Promise<boolean> {
         const user = await this.userRepository.findOneBy({ email });
         if (!user) {
             throw new NotFoundException('User not found');
         }
         const resetLink = this.getResetPasswordLink(user);
-        await this.mailService.sendMail(email, 'Reset password', 'Link do resetu hasła... ' + resetLink);
+        try {
+            await this.mailService.sendMail(email, 'Reset password', `Click the link to reset your password: ${resetLink}`);
+            return true
+        } catch (error) {
+            throw new BadRequestException('Failed to send email');
+        }
     }
 
     getResetPasswordLink(user: User): string {
-        const token = user.email + '_' + user.id;
-        const encryptedToken = encrypt(token, <string>this.configService.get('SECRET_KEY'));
+        const encryptedToken = this.getUserToken(user);
         return this.configService.get('URL_ADMIN_PANEL') + `reset-password?token=${encryptedToken}`;
+    }
+
+    getUserToken(user: User): string {
+        const token = user.email + '_' + user.id;
+        return encrypt(token, <string>this.configService.get('SECRET_KEY'));
     }
 
     verifyResetPasswordToken(token: string): string {
