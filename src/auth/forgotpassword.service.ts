@@ -5,8 +5,7 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { MailService } from '../common/mail.service';
 import { ConfigService } from '@nestjs/config';
 import { encrypt, decrypt } from '../common/crypto.helper';
-
-
+import * as bcrypt from 'bcrypt';
 
 export class ForgotPasswordService {
     constructor(
@@ -48,5 +47,15 @@ export class ForgotPasswordService {
         } catch (error) {
             throw new BadRequestException('Invalid or expired token');
         }
+    }
+
+    async changePassword(email: string, newPassword: string): Promise<User> {
+        const user = await this.userRepository.findOneBy({ email });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        user.password = await bcrypt.hash(newPassword, 12);
+
+        return await this.userRepository.save(user);
     }
 }

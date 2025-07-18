@@ -21,6 +21,24 @@ export class ForgotPasswordController {
         return {error: false, message: 'Email sent successfully'};
     }
 
+    @Post('change-password')
+    async changePassword(
+        @Body('token') token: string,
+        @Body('password') password: string,
+    ) {
+        try {
+            const emailFromToken = this.forgotPasswordService.verifyResetPasswordToken(token);
+            if (!emailFromToken) {
+                return { error: true, message: 'Invalid or expired token' };
+            }
+
+            await this.forgotPasswordService.changePassword(emailFromToken, password);
+            return { error: false, message: 'Password changed successfully' };
+        } catch (error) {
+            return { error: true, message: error.message };
+        }
+    }
+
     @Post('check-token')
     async checkToken(
         @Body('token') token: string,
