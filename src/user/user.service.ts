@@ -50,7 +50,6 @@ export class UserService {
     }
 
     async getByUsername(username: string): Promise<User | null> {
-        console.log(2222);
         return await this.userRepository.findOneBy({ username });
     }
 

@@ -3,6 +3,9 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 import { User } from '../auth/user.entity';
 import { Role } from '../auth/enums/role.enum';
+import { AuthGuard } from '../auth/guards/auth.guard';
+import { JwtModule } from '@nestjs/jwt';
+import { Token } from '../auth/enums/token.enum';
 
 describe('UserController', () => {
   let controller: UserController;
@@ -31,11 +34,23 @@ describe('UserController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UserController],
+      imports: [
+      JwtModule.register({
+        secret: Token.TOKEN_SECRET, // lub dowolny string do testów
+        signOptions: { expiresIn: '1h' },
+      }),
+    ],
       providers: [
         {
           provide: UserService,
           useValue: fakeUserService
-        }
+        },
+        {
+        provide: AuthGuard,
+        useValue: {
+          canActivate: jest.fn().mockReturnValue(true), // zawsze przepuszcza
+        },
+      },
       ]
     }).compile();
 

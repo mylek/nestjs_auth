@@ -73,7 +73,6 @@ describe('ForgotPasswordService', () => {
 
     it('getUserToken', () => {
         const token = service.getUserToken(userData);
-        console.log(token);
         const [email, id] = decrypt(token, secretKey).split('_');
 
         expect(email).toBe(userData.email);
