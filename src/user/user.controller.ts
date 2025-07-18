@@ -49,11 +49,17 @@ export class UserController {
          return await this.userService.deleteMany(ids);
     }
 
-    @Get('usernameexist/:username')
+    @Get('usernameexist/:username/:userid')
     async checkUsername(
-        @Param('username') username: string
+        @Param('username') username: string,
+        @Param('userid') userId: number,
     ) {
         try {
+            const currentUser = await this.userService.getById(userId);
+            if (currentUser.username == username) {
+                return {error: false};
+            }
+
             const user = await this.userService.getByUsername(username);
             if (!user) {
                 return {error: false};

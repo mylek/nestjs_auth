@@ -54,7 +54,6 @@ export class AuthController {
         return {token: jwt, role: user.role};
     }
 
-
     @UseGuards(AuthGuard)
     @Get('user')
     async user(@Req() request: Request) {
