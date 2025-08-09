@@ -2,8 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
-import {Response, Request} from 'express';
-import { BadRequestException, UnauthorizedException } from '@nestjs/common/exceptions';
+import { Response, Request } from 'express';
+import {
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common/exceptions';
 import { NotFoundException } from '@nestjs/common';
 import { Role } from './enums/role.enum';
 
@@ -16,7 +19,13 @@ describe('AuthController', () => {
   let userData;
 
   beforeEach(async () => {
-    userData = { id: 1, username: 'testuser', email: 'testuser@example.com', password: 'hashedpassword', role: Role.USER };
+    userData = {
+      id: 1,
+      username: 'testuser',
+      email: 'testuser@example.com',
+      password: 'hashedpassword',
+      role: Role.USER,
+    };
     fakeAppService = {
       findOne: () => {
         return Promise.resolve(userData);
@@ -26,7 +35,7 @@ describe('AuthController', () => {
       },
       remove: () => {
         return Promise.resolve(userData);
-      }
+      },
     };
 
     fakeJwtService = {
@@ -43,15 +52,15 @@ describe('AuthController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
-          {
-              provide: AuthService,
-              useValue: fakeAppService,
-          },
-          {
-              provide: JwtService,
-              useValue: fakeJwtService
-          }
-    ],
+        {
+          provide: AuthService,
+          useValue: fakeAppService,
+        },
+        {
+          provide: JwtService,
+          useValue: fakeJwtService,
+        },
+      ],
     }).compile();
 
     controller = module.get<AuthController>(AuthController);
@@ -61,38 +70,50 @@ describe('AuthController', () => {
     expect(controller).toBeDefined();
   });
 
-  it ('login user not exist', async () => {
+  it('login user not exist', async () => {
     fakeAppService.findOne = jest.fn().mockImplementation(() => {
       throw new NotFoundException('User not exist');
     });
 
     try {
-      await controller.login('testuser@example.com', 'wrongpassword', responseMock);
+      await controller.login(
+        'testuser@example.com',
+        'wrongpassword',
+        responseMock,
+      );
     } catch (error) {
       expect(error).toBeInstanceOf(NotFoundException);
     }
   });
 
-  it ('register user', async () => {
-    const result = await controller.register(userData.username, userData.email, userData.password);
+  it('register user', async () => {
+    const result = await controller.register(
+      userData.username,
+      userData.email,
+      userData.password,
+    );
     expect(result).toEqual(userData);
   });
 
-  it ('register user with existing email', async () => {
+  it('register user with existing email', async () => {
     try {
-      await controller.register(userData.username, userData.email, userData.password);
+      await controller.register(
+        userData.username,
+        userData.email,
+        userData.password,
+      );
     } catch (error) {
       expect(error).toBeInstanceOf(BadRequestException);
       expect(error.message).toBe('Email already exists');
     }
   });
 
-  it ('user with valid token', async () => {
+  it('user with valid token', async () => {
     const result = await controller.user(requestMock);
     expect(result).toEqual(userData);
   });
 
-  it ('user invalid token', async () => {
+  it('user invalid token', async () => {
     fakeJwtService.verifyAsync = jest.fn().mockResolvedValue(null);
     try {
       const result = await controller.user(requestMock);
@@ -102,12 +123,12 @@ describe('AuthController', () => {
     }
   });
 
-  it ('remove user', async () => {
+  it('remove user', async () => {
     const result = await controller.remove(userData.id);
     expect(result).toEqual(userData);
   });
 
-  it ('remove user not exist', async () => {
+  it('remove user not exist', async () => {
     fakeAppService.remove = jest.fn().mockImplementation(() => {
       throw new NotFoundException('User not exist');
     });

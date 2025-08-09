@@ -1,3 +1,3 @@
 export enum Token {
-    TOKEN_SECRET = 'your_jwt_secret'
+  TOKEN_SECRET = 'your_jwt_secret',
 }

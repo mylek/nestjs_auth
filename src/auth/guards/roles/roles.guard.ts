@@ -7,15 +7,14 @@ import { ROLES_KEY } from '../../decorators/roles.decorator';
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
-  canActivate(
-    context: ExecutionContext,
-  ): boolean {
+
+  canActivate(context: ExecutionContext): boolean {
     const requiredRols = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
     const user = context.switchToHttp().getRequest().user;
-    const hasRequiredRoles = requiredRols.some(role => user.role === role);
+    const hasRequiredRoles = requiredRols.some((role) => user.role === role);
     return hasRequiredRoles;
   }
 }
