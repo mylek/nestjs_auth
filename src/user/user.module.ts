@@ -17,8 +17,6 @@ import { Token } from '../auth/enums/token.enum';
       signOptions: { expiresIn: '1h' },
     }),
   ],
-  providers: [
-    UserService
-  ]
+  providers: [UserService],
 })
-export class UserModule { }
+export class UserModule {}

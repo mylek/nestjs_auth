@@ -8,54 +8,63 @@ import { encrypt, decrypt } from '../common/crypto.helper';
 import * as bcrypt from 'bcrypt';
 
 export class ForgotPasswordService {
-    constructor(
-        @InjectRepository(User) private readonly userRepository: Repository<User>,
-        private readonly mailService: MailService,
-        private readonly configService: ConfigService
-    ) {
-    }
+  constructor(
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly mailService: MailService,
+    private readonly configService: ConfigService,
+  ) {}
 
-    async sendMail(email: string): Promise<boolean> {
-        const user = await this.userRepository.findOneBy({ email });
-        if (!user) {
-            throw new NotFoundException('User not found');
-        }
-        const resetLink = this.getResetPasswordLink(user);
-        try {
-            await this.mailService.sendMail(email, 'Reset password', `Click the link to reset your password: ${resetLink}`);
-            return true
-        } catch (error) {
-            throw new BadRequestException('Failed to send email');
-        }
+  async sendMail(email: string): Promise<boolean> {
+    const user = await this.userRepository.findOneBy({ email });
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
-
-    getResetPasswordLink(user: User): string {
-        const encryptedToken = this.getUserToken(user);
-        return this.configService.get('URL_ADMIN_PANEL') + `reset-password?token=${encryptedToken}`;
+    const resetLink = this.getResetPasswordLink(user);
+    try {
+      await this.mailService.sendMail(
+        email,
+        'Reset password',
+        `Click the link to reset your password: ${resetLink}`,
+      );
+      return true;
+    } catch (error) {
+      throw new BadRequestException('Failed to send email');
     }
+  }
 
-    getUserToken(user: User): string {
-        const token = user.email + '_' + user.id;
-        return encrypt(token, <string>this.configService.get('SECRET_KEY'));
+  getResetPasswordLink(user: User): string {
+    const encryptedToken = this.getUserToken(user);
+    return (
+      this.configService.get('URL_ADMIN_PANEL') +
+      `reset-password?token=${encryptedToken}`
+    );
+  }
+
+  getUserToken(user: User): string {
+    const token = user.email + '_' + user.id;
+    return encrypt(token, <string>this.configService.get('SECRET_KEY'));
+  }
+
+  verifyResetPasswordToken(token: string): string {
+    try {
+      const decrypted = decrypt(
+        token,
+        <string>this.configService.get('SECRET_KEY'),
+      );
+      const email = decrypted.split('_')[0];
+      return email;
+    } catch (error) {
+      throw new BadRequestException('Invalid or expired token');
     }
+  }
 
-    verifyResetPasswordToken(token: string): string {
-        try {
-            const decrypted = decrypt(token, <string>this.configService.get('SECRET_KEY'));
-            const email = decrypted.split('_')[0];
-            return email;
-        } catch (error) {
-            throw new BadRequestException('Invalid or expired token');
-        }
+  async changePassword(email: string, newPassword: string): Promise<User> {
+    const user = await this.userRepository.findOneBy({ email });
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
+    user.password = await bcrypt.hash(newPassword, 12);
 
-    async changePassword(email: string, newPassword: string): Promise<User> {
-        const user = await this.userRepository.findOneBy({ email });
-        if (!user) {
-            throw new NotFoundException('User not found');
-        }
-        user.password = await bcrypt.hash(newPassword, 12);
-
-        return await this.userRepository.save(user);
-    }
+    return await this.userRepository.save(user);
+  }
 }

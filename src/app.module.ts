@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './auth/user.entity'; // Adjust the import path as necessary
 import { UserModule } from './user/user.module';
+import { ProfilModule } from './profil/profil.module';
 import { ConfigModule } from '@nestjs/config';
 import { Info } from './user/entity/info.entity';
 
@@ -24,6 +25,7 @@ import { Info } from './user/entity/info.entity';
     }),
     TypeOrmModule.forFeature([User, Info]),
     UserModule,
+    ProfilModule,
   ],
   controllers: [AppController],
   providers: [AppService],

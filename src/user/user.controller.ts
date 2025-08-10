@@ -62,7 +62,7 @@ export class UserController {
         throw new UnauthorizedException('Invalid token');
       }
       const { id } = request.user as User;
-      this.userService.changePassword(id, password);
+      await this.userService.changePassword(id, password);
       return { error: false, message: 'Password changed successfully' };
     } catch (error) {
       return { error: true, message: error.message };

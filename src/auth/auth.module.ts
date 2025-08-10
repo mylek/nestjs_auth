@@ -17,13 +17,9 @@ import { CommonModule } from '../common/common.module';
       secret: Token.TOKEN_SECRET,
       signOptions: { expiresIn: '1h' },
     }),
-    CommonModule
+    CommonModule,
   ],
   controllers: [AuthController, ForgotPasswordController],
-  providers: [
-    AuthService,
-    ForgotPasswordService
-  ],
-  
+  providers: [AuthService, ForgotPasswordService],
 })
 export class AuthModule {}
