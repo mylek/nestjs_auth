@@ -16,8 +16,10 @@ export class ProfilController {
   @Post(':id')
   async save(@Param('id') id: number, @Body() data: any) {
     try {
-      const imageBase64: string = data.image.base64;
-      data.info.avatar = await this.imageService.uploadImage(imageBase64);
+      if (data.image !== undefined) {
+        const imageBase64: string = data.image.base64;
+        data.info.avatar = await this.imageService.uploadImage(imageBase64);
+      }
 
       await this.profilService.update(id, data.info);
       return { error: false, message: 'Saved' };
