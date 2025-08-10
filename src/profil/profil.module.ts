@@ -6,6 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { Token } from '../auth/enums/token.enum';
 import { Info } from '../user/entity/info.entity';
 import { ProfilService } from './profil.service';
+import { ImageService } from '../common/image.service';
 
 @Module({
   controllers: [ProfilController],
@@ -16,6 +17,6 @@ import { ProfilService } from './profil.service';
       signOptions: { expiresIn: '1h' },
     }),
   ],
-  providers: [ProfilService],
+  providers: [ProfilService, ImageService],
 })
 export class ProfilModule {}
