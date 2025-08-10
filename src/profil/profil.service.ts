@@ -4,20 +4,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Info } from '../user/entity/info.entity';
 import { v2 as cloudinary } from 'cloudinary';
-import { ConfigService } from '@nestjs/config';
+import * as process from 'node:process';
 
 export class ProfilService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(Info) private readonly infoRepository: Repository<Info>,
-    private configService: ConfigService,
   ) {}
 
   async uploadAvatara(imageBase64: string): Promise<string> {
     cloudinary.config({
-      cloud_name: this.configService.get<string>('CLOUDINARY_CLOUD_NAME') ?? '',
-      api_key: this.configService.get<string>('CLOUDINARY_API_KEY') ?? '',
-      api_secret: this.configService.get<string>('CLOUDINARY_API_SECRET') ?? '',
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME ?? '',
+      api_key: process.env.CLOUDINARY_API_KEY ?? '',
+      api_secret: process.env.CLOUDINARY_API_SECRET ?? '',
     });
 
     let avatarUrl: string = '';
@@ -25,7 +24,7 @@ export class ProfilService {
       imageBase64,
       {
         folder: 'UserPhoto',
-        width: 150,
+        width: process.env.AVATAR_SIZE,
         crop: 'scale',
       },
       function (error, result) {
