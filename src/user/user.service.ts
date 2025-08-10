@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Info } from './entity/info.entity';
 import * as bcrypt from 'bcrypt';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 export class UserService {
   constructor(
@@ -76,12 +77,12 @@ export class UserService {
     return [ids];
   }
 
-  async update(id: number, params: any): Promise<User> {
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.getById(id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    Object.assign(user, params);
+    Object.assign(user, updateUserDto);
 
     const userModel = await this.userRepository.save(user);
     if (user.info) {

@@ -4,9 +4,8 @@ import { ConfigService } from '@nestjs/config';
 
 describe('MailhService', () => {
   let mailService: MailService;
-  let fakeConfigService: Partial<ConfigService>;
 
-  fakeConfigService = {
+  const fakeConfigService: Partial<ConfigService> = {
     get: jest.fn().mockImplementation((key: string): string => {
       const config = {
         MAIL_HOST: 'smtp.example.com',

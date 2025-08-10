@@ -17,6 +17,8 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException } from '@nestjs/common/exceptions';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe';
 
 @UseGuards(AuthGuard)
 @Controller('api/user')
@@ -42,8 +44,8 @@ export class UserController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: number, @Body() data: any): Promise<User> {
-    return await this.userService.update(id, data);
+  async update(@Param('id') id: number, @Body(ValidationPipe) updateUserDto: UpdateUserDto): Promise<User> {
+    return await this.userService.update(id, updateUserDto);
   }
 
   @Delete(':id')

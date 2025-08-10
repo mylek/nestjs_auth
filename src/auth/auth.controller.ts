@@ -7,7 +7,6 @@ import {
   Req,
   Param,
   Delete,
-  SetMetadata,
   UseGuards,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
@@ -22,6 +21,9 @@ import { Role } from './enums/role.enum';
 import { Roles } from './decorators/roles.decorator';
 import { RolesGuard } from './guards/roles/roles.guard';
 import { AuthGuard } from './guards/auth.guard';
+import { CreateUserDto } from '../user/dto/create-user.dto';
+import { User } from './user.entity';
+import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe';
 
 @Controller('api/auth')
 export class AuthController {
@@ -31,18 +33,8 @@ export class AuthController {
   ) {}
 
   @Post('register')
-  async register(
-    @Body('username') username: string,
-    @Body('email') email: string,
-    @Body('password') password: string,
-  ) {
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    return this.appService.create({
-      username,
-      email,
-      password: hashedPassword,
-    });
+  async register(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<User> {
+    return this.appService.create(createUserDto);
   }
 
   @Post('login')
