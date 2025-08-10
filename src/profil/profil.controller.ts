@@ -21,6 +21,9 @@ export class ProfilController {
   ) {
     try {
       if (updateProfilDto.image !== undefined) {
+        if (updateProfilDto.image.base64 == undefined) {
+          return { error: true, message: 'Image is required' };
+        }
         const imageBase64: string = updateProfilDto.image.base64;
         updateProfilDto.info.avatar =
           await this.imageService.uploadImage(imageBase64);

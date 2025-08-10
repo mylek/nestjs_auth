@@ -2,13 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtService } from '@nestjs/jwt';
-import { Response, Request } from 'express';
+import { Request, Response } from 'express';
 import {
   BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common/exceptions';
 import { NotFoundException } from '@nestjs/common';
 import { Role } from './enums/role.enum';
+import { CreateUserDto } from '../user/dto/create-user.dto';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -87,21 +88,27 @@ describe('AuthController', () => {
   });
 
   it('register user', async () => {
-    const result = await controller.register(
-      userData.username,
-      userData.email,
-      userData.password,
-    );
+    const userCreateDto: CreateUserDto = {
+      username: userData.username,
+      email: userData.email,
+      password: userData.password,
+      info: {},
+      role: Role.EDITOR,
+    };
+    const result = await controller.register(userCreateDto);
     expect(result).toEqual(userData);
   });
 
   it('register user with existing email', async () => {
     try {
-      await controller.register(
-        userData.username,
-        userData.email,
-        userData.password,
-      );
+      const userCreateDto: CreateUserDto = {
+        username: userData.username,
+        email: userData.email,
+        password: userData.password,
+        info: {},
+        role: Role.EDITOR,
+      };
+      await controller.register(userCreateDto);
     } catch (error) {
       expect(error).toBeInstanceOf(BadRequestException);
       expect(error.message).toBe('Email already exists');

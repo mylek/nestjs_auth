@@ -2,30 +2,36 @@ import { IsString, ValidateNested, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class InfoDto {
+  @IsOptional()
   @IsString()
-  firstname: string;
+  firstname?: string;
 
+  @IsOptional()
   @IsString()
-  lastname: string;
+  lastname?: string;
 
+  @IsOptional()
   @IsString()
-  street: string;
+  street?: string;
 
+  @IsOptional()
   @IsString()
-  city: string;
+  city?: string;
 
+  @IsOptional()
   @IsString()
-  postcode: string;
+  postcode?: string;
 
+  @IsOptional()
   avatar?: string;
 }
 
 export class ImageDto {
   @IsString()
-  fileName: string;
+  fileName?: string;
 
   @IsString()
-  base64: string;
+  base64?: string;
 }
 
 export class UpdateProfilDto {
