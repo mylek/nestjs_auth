@@ -19,7 +19,6 @@ export class ProfilController {
     @Param('id') id: number,
     @Body(ValidationPipe) updateProfilDto: UpdateProfilDto,
   ) {
-    console.log(111);
     try {
       if (updateProfilDto.image !== undefined) {
         const imageBase64: string = updateProfilDto.image.base64;
@@ -27,7 +26,6 @@ export class ProfilController {
           await this.imageService.uploadImage(imageBase64);
       }
 
-      console.log(updateProfilDto, 444);
       await this.profilService.update(id, updateProfilDto.info);
       return { error: false, message: 'Saved' };
     } catch (er) {
