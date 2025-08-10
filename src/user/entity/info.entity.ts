@@ -24,6 +24,9 @@ export class Info {
     @Column()
     userId: number;
 
+    @Column({ nullable: true })
+    avatar: string;
+
     @OneToOne(() => User, user => user.info, {onDelete: 'CASCADE'})
     @JoinColumn()
     user: User;
