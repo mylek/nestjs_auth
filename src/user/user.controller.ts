@@ -15,7 +15,6 @@ import { UserService } from './user.service';
 import { User } from '../auth/user.entity';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { Request } from 'express';
-import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException } from '@nestjs/common/exceptions';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe';
@@ -23,10 +22,7 @@ import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe';
 @UseGuards(AuthGuard)
 @Controller('api/user')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly jwtService: JwtService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get('')
   async getList(
@@ -44,7 +40,10 @@ export class UserController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: number, @Body(ValidationPipe) updateUserDto: UpdateUserDto): Promise<User> {
+  async update(
+    @Param('id') id: number,
+    @Body(ValidationPipe) updateUserDto: UpdateUserDto,
+  ): Promise<User> {
     return await this.userService.update(id, updateUserDto);
   }
 
@@ -92,7 +91,7 @@ export class UserController {
         return { error: false };
       }
     } catch (e) {
-      return { error: true };
+      return { error: true, message: e.message };
     }
 
     return { error: true };

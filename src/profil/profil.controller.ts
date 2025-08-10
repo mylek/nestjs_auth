@@ -2,7 +2,9 @@ import { Body, Controller, Param, Post, UseGuards, Get } from '@nestjs/common';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { User } from '../auth/user.entity';
 import { ProfilService } from './profil.service';
-import { ImageService} from '../common/image.service';
+import { ImageService } from '../common/image.service';
+import { UpdateProfilDto } from './dto/update-profil.dto';
+import { ValidationPipe } from '@nestjs/common/pipes/validation.pipe';
 
 @UseGuards(AuthGuard)
 @Controller('api/profil')
@@ -10,18 +12,23 @@ export class ProfilController {
   constructor(
     private readonly imageService: ImageService,
     private readonly profilService: ProfilService,
-  ) {
-  }
+  ) {}
 
   @Post(':id')
-  async save(@Param('id') id: number, @Body() data: any) {
+  async save(
+    @Param('id') id: number,
+    @Body(ValidationPipe) updateProfilDto: UpdateProfilDto,
+  ) {
+    console.log(111);
     try {
-      if (data.image !== undefined) {
-        const imageBase64: string = data.image.base64;
-        data.info.avatar = await this.imageService.uploadImage(imageBase64);
+      if (updateProfilDto.image !== undefined) {
+        const imageBase64: string = updateProfilDto.image.base64;
+        updateProfilDto.info.avatar =
+          await this.imageService.uploadImage(imageBase64);
       }
 
-      await this.profilService.update(id, data.info);
+      console.log(updateProfilDto, 444);
+      await this.profilService.update(id, updateProfilDto.info);
       return { error: false, message: 'Saved' };
     } catch (er) {
       return { error: true, message: er.message };

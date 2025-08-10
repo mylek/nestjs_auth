@@ -11,6 +11,7 @@ export class ProfilService {
   ) {}
 
   async update(id: number, params: any): Promise<User> {
+    console.log(params);
     const user = await this.getById(id);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -25,9 +26,12 @@ export class ProfilService {
       });
       if (info) {
         Object.assign(info, params);
+        console.log(params, 333);
+        console.log(info, 11);
         await this.infoRepository.update(info.id, info);
       }
     } else {
+      console.log(Object.assign({ userId: id }, params), 22);
       await this.infoRepository.save(Object.assign({ userId: id }, params));
     }
     return userModel;
